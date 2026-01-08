@@ -5,6 +5,7 @@ import Stats from './pages/Stats';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import History from './pages/History';
 import BottomNav from './components/BottomNav';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PreferencesProvider } from './context/PreferencesContext';
@@ -44,6 +45,11 @@ function AppContent() {
           <Route path="/stats" element={
             <PrivateRoute>
               <Stats />
+            </PrivateRoute>
+          } />
+          <Route path="/history" element={
+            <PrivateRoute>
+              <History />
             </PrivateRoute>
           } />
           <Route path="/settings" element={

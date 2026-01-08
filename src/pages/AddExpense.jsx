@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { supabase } from '../services/supabase';
+import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 
 export default function AddExpense() {
     const navigate = useNavigate();
     const { getCurrencySymbol } = usePreferences();
+    const { user } = useAuth();
     const symbol = getCurrencySymbol();
     const [type, setType] = useState('expense'); // 'expense' or 'income'
     const [amount, setAmount] = useState('');
@@ -27,7 +29,8 @@ export default function AddExpense() {
 
         setIsSubmitting(true);
         try {
-            await api.post('/transactions', {
+            const { error } = await supabase.from('transactions').insert({
+                user_id: user.id,
                 type,
                 title,
                 amount: parseFloat(amount),
@@ -35,10 +38,12 @@ export default function AddExpense() {
                 note,
                 date
             });
+
+            if (error) throw error;
             navigate('/');
         } catch (err) {
             console.error(err);
-            alert('Failed to add transaction');
+            alert(err.message || 'Failed to add transaction');
         } finally {
             setIsSubmitting(false);
         }

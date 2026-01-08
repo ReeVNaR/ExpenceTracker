@@ -20,7 +20,8 @@ export default function Login() {
             await login(email, password);
             navigate('/');
         } catch (err) {
-            setError('Failed to log in');
+            console.error("Login Error:", err);
+            setError(err.message || 'Failed to log in');
         }
         setIsLoading(false);
     };

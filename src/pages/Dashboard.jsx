@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
-import api from '../services/api';
+import { supabase } from '../services/supabase';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -16,8 +16,13 @@ export default function Dashboard() {
 
     const fetchTransactions = async () => {
         try {
-            const res = await api.get('/transactions');
-            setTransactions(res.data);
+            const { data, error } = await supabase
+                .from('transactions')
+                .select('*')
+                .order('date', { ascending: false });
+
+            if (error) throw error;
+            setTransactions(data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -41,7 +46,7 @@ export default function Dashboard() {
 
     // Helper to format date
     const formatDate = (dateString) => {
-        const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const options = { month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('en-US', options);
     };
 
@@ -89,7 +94,7 @@ export default function Dashboard() {
             <div>
                 <div className="flex justify-between items-end mb-4">
                     <h3 className="text-lg font-semibold text-foreground">Recent Transactions</h3>
-                    <button className="text-primary text-sm font-medium">View All</button>
+                    <Link to="/history" className="text-primary text-sm font-medium hover:text-primary/80 transition-colors">See All</Link>
                 </div>
                 {loading ? (
                     <p className="text-slate-500 text-center py-4">Loading transactions...</p>
@@ -100,8 +105,8 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {transactions.map((t) => (
-                            <div key={t._id} className="bg-card rounded-xl p-4 flex items-center justify-between border border-border hover:bg-secondary transition-colors">
+                        {transactions.slice(0, 4).map((t) => (
+                            <div key={t.id} className="bg-card rounded-xl p-4 flex items-center justify-between border border-border hover:bg-secondary transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className={`h-12 w-12 rounded-full flex items-center justify-center text-2xl ${t.type === 'income' ? 'bg-green-500/10 text-green-500' : 'bg-secondary text-foreground'}`}>
                                         {t.icon || (t.type === 'income' ? '💰' : '💸')}
