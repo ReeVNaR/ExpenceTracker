@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode - White-ish */
+    --background: 255 255 255;
+    --foreground: 15 23 42;
+    /* Slate 900 */
+    --card: 255 255 255;
+    /* White card */
+    --border: 226 232 240;
+    /* Slate 200 */
+    --input: 241 245 249;
+    /* Slate 100 */
+  }
+
+  .dark {
+    /* Dark Mode - Pure Black requested */
+    --background: 0 0 0;
+    --foreground: 255 255 255;
+    --card: 20 20 20;
+    /* Very dark gray for contrast against black */
+    --border: 51 65 85;
+    /* Slate 700 */
+    --input: 30 41 59;
+    /* Slate 800 */
+  }
+}
+
+body {
+  @apply bg-background text-foreground transition-colors duration-300;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-lg;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}
