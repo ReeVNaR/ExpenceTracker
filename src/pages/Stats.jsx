@@ -122,7 +122,7 @@ export default function Stats() {
     };
 
     return (
-        <div className="h-[calc(100dvh-65px)] flex flex-col bg-background pb-2 relative overflow-hidden">
+        <div className="h-screen flex flex-col bg-background pb-0 relative overflow-hidden">
             {/* Ambient Background */}
             <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[40%] bg-primary/20 rounded-full blur-[100px] pointer-events-none opacity-60"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[40%] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none opacity-60"></div>
@@ -251,6 +251,8 @@ export default function Stats() {
                     </div>
                 )}
             </div>
+            {/* Gradient Fade at Bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none z-20"></div>
         </div>
     );
 }
