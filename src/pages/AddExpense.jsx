@@ -11,6 +11,7 @@ export default function AddExpense() {
     const { user } = useAuth();
     const symbol = getCurrencySymbol();
     const [type, setType] = useState('expense'); // 'expense' or 'income'
+    const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cash'
     const [amount, setAmount] = useState('');
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState('');
@@ -35,6 +36,7 @@ export default function AddExpense() {
                 title,
                 amount: parseFloat(amount),
                 category,
+                payment_method: paymentMethod,
                 note,
                 date
             });
@@ -62,25 +64,49 @@ export default function AddExpense() {
             </header>
 
             {/* Type Toggle */}
-            <div className="bg-slate-800/50 p-1 rounded-xl flex mb-6 mx-auto max-w-sm">
-                <button
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${type === 'expense'
-                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
-                        : 'text-slate-400 hover:text-white'
-                        }`}
-                    onClick={() => setType('expense')}
-                >
-                    Expense
-                </button>
-                <button
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${type === 'income'
-                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/25'
-                        : 'text-slate-400 hover:text-white'
-                        }`}
-                    onClick={() => setType('income')}
-                >
-                    Income
-                </button>
+            <div className="flex gap-4 mb-6">
+                <div className="bg-slate-800/50 p-1 rounded-xl flex flex-1">
+                    <button
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${type === 'expense'
+                            ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
+                            : 'text-slate-400 hover:text-white'
+                            }`}
+                        onClick={() => setType('expense')}
+                    >
+                        Expense
+                    </button>
+                    <button
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${type === 'income'
+                            ? 'bg-green-500 text-white shadow-lg shadow-green-500/25'
+                            : 'text-slate-400 hover:text-white'
+                            }`}
+                        onClick={() => setType('income')}
+                    >
+                        Income
+                    </button>
+                </div>
+
+                {/* Payment Method Toggle */}
+                <div className="bg-slate-800/50 p-1 rounded-xl flex flex-1">
+                    <button
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${paymentMethod === 'online'
+                            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                            : 'text-slate-400 hover:text-white'
+                            }`}
+                        onClick={() => setPaymentMethod('online')}
+                    >
+                        Online
+                    </button>
+                    <button
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${paymentMethod === 'cash'
+                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
+                            : 'text-slate-400 hover:text-white'
+                            }`}
+                        onClick={() => setPaymentMethod('cash')}
+                    >
+                        Cash
+                    </button>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">

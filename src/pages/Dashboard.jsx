@@ -33,16 +33,25 @@ export default function Dashboard() {
     const calculateTotals = () => {
         let income = 0;
         let expense = 0;
+        let wallet = 0;
+        let bank = 0;
 
         transactions.forEach(t => {
-            if (t.type === 'income') income += t.amount;
-            else expense += t.amount;
+            if (t.type === 'income') {
+                income += t.amount;
+                if (t.payment_method === 'cash') wallet += t.amount;
+                else bank += t.amount;
+            } else {
+                expense += t.amount;
+                if (t.payment_method === 'cash') wallet -= t.amount;
+                else bank -= t.amount;
+            }
         });
 
-        return { income, expense, balance: income - expense };
+        return { income, expense, bank, wallet };
     };
 
-    const { income, expense, balance } = calculateTotals();
+    const { bank, wallet } = calculateTotals();
 
     // Helper to format date
     const formatDate = (dateString) => {
@@ -64,30 +73,37 @@ export default function Dashboard() {
                 </Link>
             </header>
 
-            {/* Total Spent Card */}
-            <div className="bg-gradient-to-br from-primary to-indigo-700 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
-                <div className="relative z-10">
-                    <p className="text-indigo-200 text-sm font-medium mb-1">Total Balance</p>
-                    <h2 className="text-4xl font-bold mb-4">{symbol} {balance.toLocaleString()}</h2>
-                    <div className="flex gap-4">
-                        <div className="bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm flex-1">
-                            <div className="flex items-center gap-1 mb-1">
-                                <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                                <p className="text-indigo-100 text-xs">Income</p>
-                            </div>
-                            <p className="font-semibold text-sm">+{symbol} {income.toLocaleString()}</p>
-                        </div>
-                        <div className="bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm flex-1">
-                            <div className="flex items-center gap-1 mb-1">
-                                <div className="w-2 h-2 rounded-full bg-red-400"></div>
-                                <p className="text-indigo-100 text-xs">Expense</p>
-                            </div>
-                            <p className="font-semibold text-sm">-{symbol} {expense.toLocaleString()}</p>
+            {/* Balances Grid */}
+            <div className="grid grid-cols-2 gap-4">
+                {/* Bank Balance Card */}
+                <div className="bg-gradient-to-br from-primary to-indigo-700 rounded-2xl p-5 shadow-lg text-white relative overflow-hidden flex flex-col justify-between h-32">
+                    <div className="relative z-10">
+                        <p className="text-indigo-200 text-xs font-medium mb-1 uppercase tracking-wider">Bank</p>
+                        <h2 className="text-2xl font-bold">{symbol} {bank.toLocaleString()}</h2>
+                    </div>
+                    {/* Decorative circle */}
+                    <div className="absolute -right-4 -top-4 h-24 w-24 bg-white/10 rounded-full blur-2xl"></div>
+                    <div className="relative z-10">
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
+                            <span className="text-lg">🏦</span>
                         </div>
                     </div>
                 </div>
-                {/* Decorative circle */}
-                <div className="absolute -right-4 -top-4 h-32 w-32 bg-white/10 rounded-full blur-2xl"></div>
+
+                {/* Wallet Card */}
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 rounded-2xl p-5 shadow-lg text-white relative overflow-hidden flex flex-col justify-between h-32">
+                    <div className="relative z-10">
+                        <p className="text-slate-400 text-xs font-medium mb-1 uppercase tracking-wider">Wallet</p>
+                        <h2 className="text-2xl font-bold">{symbol} {wallet.toLocaleString()}</h2>
+                    </div>
+                    {/* Decorative circle */}
+                    <div className="absolute -right-4 -top-4 h-24 w-24 bg-primary/10 rounded-full blur-2xl"></div>
+                    <div className="relative z-10">
+                        <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center backdrop-blur-sm text-orange-500">
+                            <span className="text-lg">👛</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Recent Transactions */}
