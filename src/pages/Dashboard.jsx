@@ -62,7 +62,7 @@ export default function Dashboard() {
     const symbol = getCurrencySymbol();
 
     return (
-        <div className="p-4 pb-24 space-y-6">
+        <div className="h-[100dvh] overflow-y-auto no-scrollbar p-4 pb-24 space-y-6">
             <header className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground transition-colors">Dashboard</h1>

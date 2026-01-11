@@ -52,7 +52,7 @@ export default function AddExpense() {
     };
 
     return (
-        <div className="min-h-screen bg-background p-4 pb-24">
+        <div className="h-[100dvh] overflow-y-auto no-scrollbar bg-background p-4 pb-24">
             <header className="flex items-center gap-4 mb-6 pt-2">
                 <button
                     onClick={() => navigate(-1)}

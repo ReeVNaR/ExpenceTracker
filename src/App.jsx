@@ -27,7 +27,7 @@ function AppContent() {
 
   return (
     <div className="bg-background text-white font-sans min-h-screen max-w-lg mx-auto relative shadow-2xl border-x border-slate-800">
-      <div className={!hideNav ? "pb-16" : ""}>
+      <div className="">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
