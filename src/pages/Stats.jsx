@@ -3,7 +3,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearSca
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { supabase } from '../services/supabase';
 import { usePreferences } from '../context/PreferencesContext';
-import { PieChart, BarChart2, TrendingDown, ArrowDownRight, ArrowUpRight, DollarSign } from 'lucide-react';
+import { PieChart, BarChart2, TrendingDown, ArrowDownRight, ArrowUpRight, DollarSign, ArrowLeft } from 'lucide-react';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
@@ -12,33 +12,43 @@ export default function Stats() {
     const [transactions, setTransactions] = useState([]);
     const [view, setView] = useState('breakdown');
     const [trendView, setTrendView] = useState('daily');
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const symbol = getCurrencySymbol();
+
+    const getGroupedCategoryTransactions = () => {
+        if (!selectedCategory) return [];
+        const filtered = transactions.filter(t => t.type === 'expense' && t.category === selectedCategory);
+
+        // Ensure sorted by date descending
+        filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const groups = [];
+        let currentDate = '';
+
+        filtered.forEach(t => {
+            const dateObj = new Date(t.date);
+            let dateLabel = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (dateObj.toDateString() === today.toDateString()) dateLabel = 'Today';
+            else if (dateObj.toDateString() === yesterday.toDateString()) dateLabel = 'Yesterday';
+
+            if (currentDate !== dateLabel) {
+                groups.push({ date: dateLabel, transactions: [] });
+                currentDate = dateLabel;
+            }
+            groups[groups.length - 1].transactions.push(t);
+        });
+        return groups;
+    };
 
     const chartRef = React.useRef(null);
 
     useEffect(() => {
         fetchData();
-
-        // Chart rotation animation
-        let animationFrameId;
-        const animate = () => {
-            const chart = chartRef.current;
-            if (chart) {
-                chart.options.rotation = (chart.options.rotation || 0) + 0.05;
-                chart.update('none');
-            }
-            animationFrameId = requestAnimationFrame(animate);
-        };
-
-        // Short delay to ensure chart is mounted
-        const timeoutId = setTimeout(() => {
-            animate();
-        }, 100);
-
-        return () => {
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            clearTimeout(timeoutId);
-        };
     }, []);
 
     const fetchData = async () => {
@@ -387,60 +397,101 @@ export default function Stats() {
             <div className="flex-1 min-h-0 relative px-6 z-10">
                 {view === 'breakdown' ? (
                     <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        {/* Chart Container - Fixed Height */}
-                        <div className="h-[240px] relative shrink-0 -mt-2 mb-2 flex items-center justify-center">
-                            <div className="w-full h-full p-2">
-                                <Doughnut ref={chartRef} data={doughnutData} options={doughnutOptions} plugins={[floatingLabelsPlugin]} />
-                            </div>
-                            {/* Inner Ring Glow */}
-                            <div className="absolute inset-0 rounded-full bg-primary/5 blur-3xl pointer-events-none transform scale-50"></div>
-
-                            {/* Center Statistic */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <div className="p-4 bg-background/50 backdrop-blur-sm rounded-full border border-white/5 shadow-2xl">
-                                    <TrendingDown size={24} className="text-rose-400" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* List Header */}
-                        <div className="flex justify-between items-center mb-3 px-1">
-                            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Top Categories</h3>
-                            <button className="text-xs text-primary hover:text-indigo-300 transition-colors">Sort by value</button>
-                        </div>
-
-                        {/* Scrollable List */}
-                        <div className="flex-1 overflow-y-auto no-scrollbar pb-4 space-y-3">
-                            {sortedCategories.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
-                                    <PieChart size={32} className="opacity-20" />
-                                    <p className="text-sm">No expenses yet</p>
-                                </div>
-                            ) : (
-                                sortedCategories.map(([cat, amount], index) => (
-                                    <div
-                                        key={cat}
-                                        className="group bg-slate-900/40 hover:bg-slate-800/60 transition-all duration-300 p-4 rounded-2xl border border-white/5 flex items-center justify-between shadow-sm active:scale-[0.98]"
+                        {selectedCategory ? (
+                            <>
+                                {/* Category Header */}
+                                <div className="flex items-center gap-3 mb-4 shrink-0">
+                                    <button
+                                        onClick={() => setSelectedCategory(null)}
+                                        className="p-2 -ml-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div
-                                                className="w-3 h-10 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)]"
-                                                style={{ backgroundColor: colorMap[cat] }}
-                                            ></div>
-                                            <div>
-                                                <p className="text-white font-medium text-base">{cat}</p>
-                                                <p className="text-xs text-slate-500 mt-0.5">{((amount / totalExpense) * 100).toFixed(1)}% of total</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-white font-bold text-base tracking-wide flex items-center justify-end gap-1">
-                                                {symbol}{amount.toLocaleString()}
-                                            </p>
-                                        </div>
+                                        <ArrowLeft size={20} />
+                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-1.5 h-6 rounded-full"
+                                            style={{ backgroundColor: colorMap[selectedCategory] }}
+                                        ></div>
+                                        <h2 className="text-xl font-bold text-white">{selectedCategory}</h2>
                                     </div>
-                                ))
-                            )}
-                        </div>
+                                </div>
+
+                                {/* Transactions For Category */}
+                                <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
+                                    {getGroupedCategoryTransactions().length === 0 ? (
+                                        <p className="text-slate-500 text-center mt-10">No transactions found.</p>
+                                    ) : (
+                                        getGroupedCategoryTransactions().map((group) => (
+                                            <div key={group.date} className="mb-5">
+                                                <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider pl-1 mb-2 sticky top-0 bg-background/95 backdrop-blur-sm py-1 z-10 w-fit rounded-r-lg pr-3">
+                                                    {group.date}
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {group.transactions.map((t) => (
+                                                        <div key={t.id} className="bg-slate-900/40 backdrop-blur-sm rounded-xl p-4 flex items-center justify-between border border-white/5 hover:bg-slate-800/60 transition-colors">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center text-lg bg-rose-500/10 text-rose-500`}>
+                                                                    💸
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-white text-sm font-medium">{t.title}</p>
+                                                                    <p className="text-slate-500 text-xs">{t.payment_method === 'cash' ? 'Cash' : 'Bank'}</p>
+                                                                </div>
+                                                            </div>
+                                                            <p className="font-semibold text-sm text-white">
+                                                                -{symbol} {t.amount.toLocaleString()}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* List Header */}
+                                <div className="flex justify-between items-center mb-3 px-1 pt-2">
+                                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">All Categories</h3>
+                                    <span className="text-xs text-slate-500">{sortedCategories.length} Categories</span>
+                                </div>
+
+                                {/* Scrollable List */}
+                                <div className="flex-1 overflow-y-auto no-scrollbar pb-20 space-y-3">
+                                    {sortedCategories.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
+                                            <PieChart size={32} className="opacity-20" />
+                                            <p className="text-sm">No expenses yet</p>
+                                        </div>
+                                    ) : (
+                                        sortedCategories.map(([cat, amount], index) => (
+                                            <button
+                                                key={cat}
+                                                onClick={() => setSelectedCategory(cat)}
+                                                className="w-full group bg-slate-900/40 hover:bg-slate-800/60 transition-all duration-300 p-4 rounded-2xl border border-white/5 flex items-center justify-between shadow-sm active:scale-[0.98] text-left"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div
+                                                        className="w-3 h-10 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                                        style={{ backgroundColor: colorMap[cat] }}
+                                                    ></div>
+                                                    <div>
+                                                        <p className="text-white font-medium text-base group-hover:text-primary transition-colors">{cat}</p>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{((amount / totalExpense) * 100).toFixed(1)}% of total</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-white font-bold text-base tracking-wide flex items-center justify-end gap-1">
+                                                        {symbol}{amount.toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <div className="h-full flex flex-col animate-in fade-in slide-in-from-right-4 duration-500 pt-1 pb-20 overflow-y-auto no-scrollbar">
