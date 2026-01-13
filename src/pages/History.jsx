@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Search, Trash2, Calendar, Filter } from 'lucide-react';
+import { ArrowLeft, Search, Trash2, Calendar, Filter, Wallet, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { usePreferences } from '../context/PreferencesContext';
@@ -11,6 +11,7 @@ export default function History() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterMethod, setFilterMethod] = useState('all'); // 'all', 'online', 'cash'
 
     useEffect(() => {
         fetchTransactions();
@@ -54,10 +55,12 @@ export default function History() {
         }
     };
 
-    const filteredTransactions = transactions.filter(t =>
-        t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredTransactions = transactions.filter(t => {
+        const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesMethod = filterMethod === 'all' || (t.payment_method || 'online') === filterMethod;
+        return matchesSearch && matchesMethod;
+    });
 
     return (
         <div className="h-screen bg-background flex flex-col relative overflow-hidden">
@@ -85,7 +88,7 @@ export default function History() {
                 </div>
 
                 {/* Search Bar */}
-                <div className="relative group">
+                <div className="relative group mb-4">
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
                     <div className="relative bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center p-1 focus-within:border-primary/50 transition-colors">
                         <Search className="ml-3 text-slate-500" size={18} />
@@ -105,6 +108,40 @@ export default function History() {
                             </button>
                         )}
                     </div>
+                </div>
+
+                {/* Payment Method Filter */}
+                <div className="flex bg-slate-900/50 p-1 rounded-xl mb-2 border border-white/5">
+                    <button
+                        onClick={() => setFilterMethod('all')}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${filterMethod === 'all'
+                            ? 'bg-slate-700 text-white shadow-lg'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        <Filter size={14} />
+                        All
+                    </button>
+                    <button
+                        onClick={() => setFilterMethod('online')}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${filterMethod === 'online'
+                            ? 'bg-indigo-500/80 text-white shadow-lg shadow-indigo-500/20'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        <CreditCard size={14} />
+                        Bank
+                    </button>
+                    <button
+                        onClick={() => setFilterMethod('cash')}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-2 ${filterMethod === 'cash'
+                            ? 'bg-orange-500/80 text-white shadow-lg shadow-orange-500/20'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        <Wallet size={14} />
+                        Cash
+                    </button>
                 </div>
             </header>
 
@@ -139,6 +176,8 @@ export default function History() {
                                     <p className="text-white font-semibold text-[15px] group-hover:text-primary transition-colors">{t.title}</p>
                                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
                                         <span className="bg-white/5 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">{t.category}</span>
+                                        <span>•</span>
+                                        <span>{t.payment_method === 'cash' ? 'Cash' : 'Bank'}</span>
                                         <span>•</span>
                                         <span>{formatDate(t.date)}</span>
                                     </div>

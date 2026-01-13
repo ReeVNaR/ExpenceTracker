@@ -527,7 +527,7 @@ export default function Stats() {
                                         </div>
                                         <div>
                                             <p className="text-white text-sm font-medium">{t.title}</p>
-                                            <p className="text-slate-500 text-xs">{new Date(t.date).toLocaleDateString()}</p>
+                                            <p className="text-slate-500 text-xs">{t.payment_method === 'cash' ? 'Cash' : 'Bank'} • {new Date(t.date).toLocaleDateString()}</p>
                                         </div>
                                     </div>
                                     <p className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-400' : 'text-white'}`}>
